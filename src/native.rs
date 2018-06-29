@@ -177,12 +177,16 @@ pub unsafe extern "C" fn GFp_p256_scalar_mul_mont()
 }
 
 fn p_add(a_x: U256, a_y: U256, a_z: U256, b_x: U256, b_y: U256, b_z: U256) -> (U256, U256, U256) {
+
+	println!("a=({}, {}, {}), b=({}, {}, {})", a_x, a_y, a_z, b_x.to_hex(), b_y.to_hex(), b_z);
     if b_z.is_zero() || a_z.is_zero() {
         if b_z.is_zero() && a_z.is_zero() {
             return (0.into(), 0.into(), 0.into())
         } else if b_z.is_zero() {
+			println!("returning a!");
             return (a_x, a_y, a_z)
         } else if a_z.is_zero() {
+			println!("returning b!");
             return (b_x, b_y, b_z)
         }
     }
@@ -233,8 +237,30 @@ pub unsafe extern "C" fn GFp_nistz256_point_add_affine(
     let b = b as *const [U256; 2];
     let r = r as *mut [U256; 3];
 
-    let out = p_add((*a)[0], (*a)[1], (*a)[2], (*b)[0], (*b)[1], U256::from(1));
-    *r = [out.0, out.1, out.2];
+	let r_inv = U256::from_dec_str("115792089183396302114378112356516095823261736990586219612555396166510339686400").unwrap();
+
+	let b_x: U256 = (*b)[0];
+	let b_y: U256 = (*b)[1];
+
+	if b_x.is_zero() && b_y.is_zero() {
+		// a + inf = a
+		*r = *a;
+		return;
+	}
+
+	let b_x: U256 = (((b_x.full_mul(r_inv) % U512::from(N)) * U512::from(r_inv)) % U512::from(N)).into();
+	let b_y: U256 = ((((b_y.full_mul(r_inv) % U512::from(N)) * U512::from(r_inv)) % U512::from(N)) * U512::from(r_inv) % U512::from(N))
+		.into();
+
+	if (*a)[2].is_zero() {
+		// inf + b = b (in jacobian)
+		*r = [b_x, b_y, U256::one()];
+		return;
+	}
+
+    let (r_x, r_y, r_z) = p_add((*a)[0], (*a)[1], (*a)[2], b_x, b_y, U256::from(1));
+
+    *r = [r_x, r_y, r_z];
 }
 
 #[no_mangle]
