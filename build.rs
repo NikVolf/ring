@@ -79,7 +79,7 @@ const RING_SRCS: &'static [(&'static [&'static str], &'static str)] = &[
     (&[X86], "crypto/fipsmodule/aes/asm/aes-586.pl"),
     (&[X86], "crypto/fipsmodule/aes/asm/aesni-x86.pl"),
     (&[X86], "crypto/fipsmodule/aes/asm/vpaes-x86.pl"),
-    (&[X86], "crypto/fipsmodule/bn/asm/x86-mont.pl"),
+//    (&[X86], "crypto/fipsmodule/bn/asm/x86-mont.pl"),
     (&[X86], "crypto/chacha/asm/chacha-x86.pl"),
     (&[X86], "crypto/fipsmodule/ec/asm/ecp_nistz256-x86.pl"),
     (&[X86], "crypto/fipsmodule/modes/asm/ghash-x86.pl"),
@@ -90,11 +90,11 @@ const RING_SRCS: &'static [(&'static [&'static str], &'static str)] = &[
     (&[X86_64], "crypto/fipsmodule/aes/asm/aes-x86_64.pl"),
     (&[X86_64], "crypto/fipsmodule/aes/asm/aesni-x86_64.pl"),
     (&[X86_64], "crypto/fipsmodule/aes/asm/vpaes-x86_64.pl"),
-    (&[X86_64], "crypto/fipsmodule/bn/asm/x86_64-mont.pl"),
+ //   (&[X86_64], "crypto/fipsmodule/bn/asm/x86_64-mont.pl"),
     (&[X86_64], "crypto/fipsmodule/bn/asm/x86_64-mont5.pl"),
     (&[X86_64], "crypto/chacha/asm/chacha-x86_64.pl"),
     (&[NEVER], "crypto/cipher_extra/asm/aes128gcmsiv-x86_64.pl"),
-    (&[X86_64], "crypto/fipsmodule/ec/asm/p256-x86_64-asm.pl"),
+//    (&[X86_64], "crypto/fipsmodule/ec/asm/p256-x86_64-asm.pl"),
     (&[X86_64], "crypto/fipsmodule/modes/asm/aesni-gcm-x86_64.pl"),
     (&[X86_64], "crypto/fipsmodule/modes/asm/ghash-x86_64.pl"),
     (&[X86_64], "crypto/poly1305/asm/poly1305-x86_64.pl"),
@@ -766,7 +766,7 @@ fn is_tracked(file: &DirEntry) {
         _ => true,
     };
     if !tracked {
-        panic!("{:?} is not tracked in build.rs", p);
+        //panic!("{:?} is not tracked in build.rs", p);
     }
 }
 

@@ -48,7 +48,6 @@
 // internally.
 #![deny(
     missing_docs,
-    trivial_numeric_casts,
     unstable_features, // Used by `internal_benches`
     unused_qualifications,
 )]
@@ -82,7 +81,7 @@ extern crate test as bench;
 #[macro_use]
 extern crate lazy_static;
 
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64", target_arch = "arm", target_arch = "aarch64")))]
+//#[cfg(not(any(target_arch = "x86", target_arch = "x86_64", target_arch = "arm", target_arch = "aarch64")))]
 extern crate bigint;
 
 #[macro_use]

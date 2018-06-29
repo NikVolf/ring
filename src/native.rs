@@ -15,7 +15,7 @@
 //! This module contains native implementations of functions otherwise implemented in
 //! platform-specific assembly code.
 
-#![cfg(not(any(target_arch = "x86", target_arch = "x86_64", target_arch = "arm", target_arch = "aarch64")))]
+// #![cfg(not(any(target_arch = "x86", target_arch = "x86_64", target_arch = "arm", target_arch = "aarch64")))]
 
 use std::mem;
 use std::slice;
@@ -74,8 +74,7 @@ pub unsafe extern "C" fn GFp_nistz256_add(r: *mut Limb/*[COMMON_OPS.num_limbs]*/
 }
 
 fn add(a: U256, b: U256) -> U256 {
-    let (sum, overflow) = a.overflowing_add(b);
-	if overflow { U256::max_value() - N + U256::one() } else { sum % N }
+	U256::from((U512::from(a) + U512::from(b)) % U512::from(N))
 }
 
 #[no_mangle]
@@ -129,7 +128,8 @@ fn tripled(a: U256) -> U256 {
 
 fn p_double(x: U256, y: U256, z: U256) -> (U256, U256, U256) {
 	if y == U256::zero() {
-		panic!("doubling infinity!");
+        // infinity
+		return (0.into(), 0.into(), 0.into())
 	}
 
 	// S = 4*X*Y^2
@@ -147,7 +147,6 @@ fn p_double(x: U256, y: U256, z: U256) -> (U256, U256, U256) {
 	);
 	// Z' = 2*Y*Z
 	let r_z = doubled(mul(y, z));
-
 	(r_x, r_y, r_z)
 }
 
@@ -167,7 +166,27 @@ pub unsafe extern "C" fn GFp_nistz256_point_add(r: *mut Limb/*[3][COMMON_OPS.num
     *r = [out.0, out.1, out.2];
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn GFp_p256_scalar_sqr_rep_mont()
+{
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn GFp_p256_scalar_mul_mont()
+{
+}
+
 fn p_add(a_x: U256, a_y: U256, a_z: U256, b_x: U256, b_y: U256, b_z: U256) -> (U256, U256, U256) {
+    if b_z.is_zero() || a_z.is_zero() {
+        if b_z.is_zero() && a_z.is_zero() {
+            return (0.into(), 0.into(), 0.into())
+        } else if b_z.is_zero() {
+            return (a_x, a_y, a_z)
+        } else if a_z.is_zero() {
+            return (b_x, b_y, b_z)
+        }
+    }
+
 	// U1 = X1*Z2^2
 	let u1 = mul(a_x, squared(b_z));
 	// U2 = X2*Z1^2
@@ -180,7 +199,7 @@ fn p_add(a_x: U256, a_y: U256, a_z: U256, b_x: U256, b_y: U256, b_z: U256) -> (U
 
 	if u1 == u2 {
 		if s1 != s2 {
-			panic!("point at infinity!");
+			return (U256::zero(), U256::zero(), U256::zero())
 		} else {
 			return p_double(a_x, a_y, a_z);
 		}
@@ -224,3 +243,8 @@ pub unsafe extern "C" fn GFp_nistz256_point_double(r: *mut Limb/*[p256::COMMON_O
 {
     GFp_nistz256_point_add(r, a, a);
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn GFp_nistz256_select_w7(_a: *mut u8, _b: *mut u8, _c: *mut u8) {}
+#[no_mangle]
+pub unsafe extern "C" fn GFp_nistz256_select_w5(_a: *mut u8, _b: *mut u8, _c: *mut u8) {}
